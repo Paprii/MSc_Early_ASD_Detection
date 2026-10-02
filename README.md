@@ -2,13 +2,13 @@
 
 Machine learning evaluation for autism spectrum disorder (ASD) screening on the Kaggle *Autism Prediction* dataset. Ten classifiers and two fusion models are compared against the standard AQ-10 cutoff (score ≥ 6) with repeated stratified cross-validation.
 
-The notebook re-implements and extends the workflow of the MSc thesis *Early-stage ASD Detection from Clinical Test Data* (Jahangirnagar University, 2024). See [Relation to the thesis](#relation-to-the-thesis) for what is reproduced, interpreted and added.
+The notebook reimplements and extends the workflow of the MSc thesis *Early-stage ASD Detection from Clinical Test Data* (Jahangirnagar University, 2024).
 
 ## Key findings
 
 - **The models match the AQ-10 rule but do not clearly beat it.** The AQ sum alone reaches an AUC of 0.91, and no model exceeds it beyond noise.
 - **Accuracy is misleading.** Only 20% of the records are positive, so models look better at the default threshold mainly because they flag fewer people and miss more real cases.
-- **At equal recall the gain is small.** At a matched recall of about 90%, the best models (fusion, K-Means, Fuzzy C-Means) raise specificity by roughly 4–5 points over an AQ cutoff chosen on the training data. About half of the flagged records are still negative.
+- **At equal recall, the gain is small.** At a matched recall of about 90%, the best models (fusion, K-Means, Fuzzy C-Means) raise specificity by roughly 4–5 points over an AQ cutoff chosen on the training data. About half of the flagged records are still negative.
 - **Fusion adds little.** Entropy weighting performs no better than an equal-weight average.
 - **The `result` column adds almost nothing.** Results with and without it are nearly identical.
 
@@ -41,26 +41,11 @@ The decision tree (AUC 0.85) and the SVM on the MLR score and age (AUC 0.84) are
 5. **Calibration and fusion.** Platt sigmoids are fitted on out-of-fold training probabilities. Entropy-weighted fusion weights each probability by `1 - H(p)`, with an equal-weight average as a control.
 6. **Evaluation.** Repeated stratified cross-validation (5 folds, 2 repeats), run with and without `result`. Each model is scored at the default threshold (`p ≥ 0.5`) and at a matched recall (`TARGET_RECALL = 0.90`). Baselines are the AQ-10 ≥ 6 rule, an AQ-sum cutoff chosen on the training data, and the majority class. Per-fold paired differences against the baseline are descriptive only, because the folds overlap and p-values would be invalid.
 
-## Relation to the thesis
-
-| | Status |
-|---|---|
-| Data loading, text-to-number conversion, the seven algorithms, MLR with logistic regression, confusion-matrix metrics | Follows the thesis workflow |
-| Entropy-based combining scheme | **My interpretation.** The thesis does not define it |
-| Polar (-1/+1) recoding | Applied inside the MLR branch only. It has no effect on a linear regression with intercept |
-| SVM | The main SVM uses the MLR score and age. The thesis SVM on age and `result` is reported as a supplementary model |
-| K-Means | Included because it appears in thesis Fig 4.1 and Fig 5.11 |
-| Calibration, matched-recall evaluation, repeated cross-validation, AQ-10 baselines, equal-weight fusion control, with/without `result` runs | **Added** for a fairer evaluation |
-| Feedback loop in thesis Fig 4.1 | Not implemented. The stopping criterion is not specified |
-
-The notebook does **not** reproduce thesis Table 5.1. The thesis test sets appear balanced, while the Kaggle file is about 80/20, so the reported accuracies are not comparable.
-
 ## Repository structure
 
 ```
 .
 ├── ASD_detection_extended.ipynb   # full pipeline with saved outputs
-├── requirements.txt
 └── README.md
 ```
 
@@ -69,13 +54,13 @@ The notebook does **not** reproduce thesis Table 5.1. The thesis test sets appea
 ## Getting started
 
 1. Download `train.csv` from the [Kaggle competition page](https://www.kaggle.com/competitions/autismdiagnosis) (a Kaggle account may be required) and place it next to the notebook or in `./data/`.
-2. Install the dependencies:
+2. Install the dependencies (Python 3.9+):
    ```bash
-   pip install -r requirements.txt
+   pip install numpy pandas matplotlib seaborn "scikit-learn>=1.2"
    ```
 3. Open the notebook and run all cells. A full run takes a few minutes.
 
-In Colab, the notebook prompts for the file if it is not found. In a Kaggle notebook, it looks in `/kaggle/input/`. The loader stops with an error if the file is missing or lacks the expected columns, so the UCI version of the dataset is not supported.
+In Colab, the notebook prompts for the file if it is not found. In a Kaggle notebook it looks in `/kaggle/input/`. The loader stops with an error if the file is missing or lacks the expected columns, so the UCI version of the dataset is not supported.
 
 ### Configuration
 
